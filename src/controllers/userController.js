@@ -64,3 +64,34 @@ export const getProfile = async (req, res) => {
   const user = await User.findById(req.user.id).select("-password");
   res.json(user);
 };
+
+// Admin/Registrar verifies KYC
+export const verifyKYC = async (req, res) => {
+  const { id } = req.params;
+  const { status } = req.body;
+
+  if (!["verified", "rejected"].includes(status))
+    return res.status(400).send("Invalid status");
+
+  try {
+    const user = await User.findById(id);
+    if (!user) return res.status(404).send("User not found");
+
+    user.kycStatus = status;
+    await user.save();
+
+    res.send({ message: `KYC ${status}`, user });
+  } catch (err) {
+    res.status(500).send(err.message);
+  }
+};
+
+// Admin/Listing KYC
+export const listPendingKYC = async (_req, res) => {
+  try {
+    const users = await User.find({ kycStatus: "pending" });
+    res.send(users);
+  } catch (err) {
+    res.status(500).send(err.message);
+  }
+};

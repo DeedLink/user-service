@@ -1,4 +1,4 @@
-function requireRole(role: "admin" | "registrar") {
+export function requireRole(role) {
   return (req, res, next) => {
     const user = req.user;
     if (!user || ![role, "admin"].includes(user.role)) {

@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { NIC_REGEX } from "../validation/nic";
+import { NIC_REGEX } from "../validation/nic.js";
 
 const userSchema = new mongoose.Schema(
   {
@@ -11,10 +11,10 @@ const userSchema = new mongoose.Schema(
       required: true,
       unique: true,
       validate: {
-        validator: function (v: any) {
+        validator: function (v) {
           return NIC_REGEX.test(v);
         },
-        message: (props: any) => `${props.value} is not a valid NIC number!`,
+        message: (props) => `${props.value} is not a valid NIC number!`,
       },
     },
     kycDocumentHash: { type: String },
