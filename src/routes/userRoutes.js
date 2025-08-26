@@ -1,6 +1,7 @@
 import express from "express";
 import multer from "multer";
 import {
+  getUsers,
   registerUser,
   loginUser,
   uploadKYC,
@@ -27,5 +28,8 @@ router.patch("/:id/verify-kyc", authMiddleware, requireRole("registrar"), verify
 
 // List pending KYC
 router.get("/pending-kyc", authMiddleware, requireRole("registrar"), listPendingKYC);
+
+//For testing those must be restricted
+router.get("/", getUsers);
 
 export default router;

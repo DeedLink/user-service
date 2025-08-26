@@ -2,26 +2,42 @@ import User from "../models/User.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { ipfsClient } from "../utils/ipfs.js";
+import { NIC_REGEX } from "../validation/nic.js";
 
-// Register User
+// Login Regisration
 export const registerUser = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
-    const existing = await User.findOne({ email });
-    if (existing) return res.status(400).json({ message: "Email exists" });
+    const { name, email, password, nic } = req.body;
+
+    if (!NIC_REGEX.test(nic)) {
+      return res.status(400).json({ message: "Invalid NIC number" });
+    }
+    const existing = await User.findOne({ $or: [{ email }, { nic }] });
+    if (existing) {
+      return res.status(400).json({ message: "Email or NIC already exists" });
+    }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const user = await User.create({ name, email, password: hashedPassword });
 
-    const token = jwt.sign({ id: user._id, email: user.email }, process.env.JWT_SECRET, {
-      expiresIn: "7d",
+    const user = await User.create({
+      name,
+      email,
+      password: hashedPassword,
+      nic,
     });
+
+    const token = jwt.sign(
+      { id: user._id, email: user.email },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
 
     res.json({ user, token });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
+
 
 // Login User
 export const loginUser = async (req, res) => {
@@ -93,5 +109,15 @@ export const listPendingKYC = async (_req, res) => {
     res.send(users);
   } catch (err) {
     res.status(500).send(err.message);
+  }
+};
+
+//Get all users
+export const getUsers = async (_req, res) => {
+  try {
+    const users = await User.find();
+    res.json(users);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 };
