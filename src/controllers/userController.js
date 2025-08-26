@@ -3,31 +3,44 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { ipfsClient } from "../utils/ipfs.js";
 import { NIC_REGEX } from "../validation/nic.js";
+import { ethers } from "ethers";
 
-// Login Regisration
+// Register User with Wallet
 export const registerUser = async (req, res) => {
   try {
-    const { name, email, password, nic } = req.body;
+    const { name, email, nic, walletAddress, signature } = req.body;
 
     if (!NIC_REGEX.test(nic)) {
       return res.status(400).json({ message: "Invalid NIC number" });
     }
-    const existing = await User.findOne({ $or: [{ email }, { nic }] });
+
+    const existing = await User.findOne({ $or: [{ email }, { nic }, { walletAddress }] });
     if (existing) {
-      return res.status(400).json({ message: "Email or NIC already exists" });
+      return res.status(400).json({ message: "Email, NIC, or Wallet already exists" });
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    if (signature) {
+      const message = `Registering wallet: ${walletAddress}`;
+      try {
+        const signerAddress = ethers.utils.verifyMessage(message, signature);
+        if (signerAddress.toLowerCase() !== walletAddress.toLowerCase()) {
+          return res.status(400).json({ message: "Signature does not match wallet address" });
+        }
+      } catch (err) {
+        return res.status(400).json({ message: "Invalid signature" });
+      }
+    }
 
     const user = await User.create({
       name,
       email,
-      password: hashedPassword,
       nic,
+      walletAddress,
+      kycStatus: "pending",
     });
 
     const token = jwt.sign(
-      { id: user._id, email: user.email },
+      { id: user._id, walletAddress: user.walletAddress },
       process.env.JWT_SECRET,
       { expiresIn: "7d" }
     );
