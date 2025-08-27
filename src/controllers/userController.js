@@ -8,7 +8,7 @@ import { ethers } from "ethers";
 // Register User with Wallet
 export const registerUser = async (req, res) => {
   try {
-    const { name, email, nic, walletAddress, signature } = req.body;
+    const { name, email, nic, password, walletAddress, signature, role } = req.body;
 
     if (!NIC_REGEX.test(nic)) {
       return res.status(400).json({ message: "Invalid NIC number" });
@@ -19,7 +19,7 @@ export const registerUser = async (req, res) => {
       return res.status(400).json({ message: "Email, NIC, or Wallet already exists" });
     }
 
-    if (signature) {
+    if (walletAddress && signature) {
       const message = `Registering wallet: ${walletAddress}`;
       try {
         const signerAddress = ethers.utils.verifyMessage(message, signature);
@@ -27,20 +27,27 @@ export const registerUser = async (req, res) => {
           return res.status(400).json({ message: "Signature does not match wallet address" });
         }
       } catch (err) {
-        return res.status(400).json({ message: "Invalid signature" });
+        return res.status(400).json({ message: "Invalid wallet signature" });
       }
+    }
+
+    let hashedPassword;
+    if (password) {
+      hashedPassword = await bcrypt.hash(password, 10);
     }
 
     const user = await User.create({
       name,
       email,
       nic,
-      walletAddress,
+      walletAddress: walletAddress || null,
+      password: hashedPassword || null,
       kycStatus: "pending",
+      role: role || "user",
     });
 
     const token = jwt.sign(
-      { id: user._id, walletAddress: user.walletAddress },
+      { id: user._id, email: user.email, walletAddress: user.walletAddress, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: "7d" }
     );
@@ -50,6 +57,7 @@ export const registerUser = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
 
 
 // Login User
