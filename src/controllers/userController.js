@@ -58,8 +58,6 @@ export const registerUser = async (req, res) => {
   }
 };
 
-
-
 // Login User
 export const loginUser = async (req, res) => {
   try {
@@ -80,20 +78,55 @@ export const loginUser = async (req, res) => {
   }
 };
 
-// Upload KYC Document to IPFS
-export const uploadKYC = async (req, res) => {
+// Upload KYC Document to IPFS / Single PDF version
+export const uploadKYCPDF = async (req, res) => {
   try {
     const userId = req.user.id;
     if (!req.file) return res.status(400).json({ message: "File missing" });
 
     const file = req.file.buffer;
-    const added = await ipfsClient.add(file);
+    const added = await ipfsClient.add(file, "pdf");
     const user = await User.findByIdAndUpdate(userId, { kycDocumentHash: added.path }, { new: true });
 
     res.json({ message: "KYC uploaded", kycDocumentHash: added.path, user });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
+};
+
+// Upload KYC Documents to IPFS / Images version
+export const uploadKYCImages = async (req, res) => {
+    try {
+        const userId = '68ae98a55edb7b1f2cd21e34';
+        if (!req.files || Object.keys(req.files).length === 0) {
+            return res.status(400).json({ message: "Files missing" });
+        }
+        const uploadedDocs = {};
+
+        console.log(uploadedDocs);
+
+        for (const [key, fileArr] of Object.entries(req.files)) {
+            const file = fileArr[0];
+            const added = await ipfsClient.add(file.buffer, "png");
+            uploadedDocs[key] = added.path;
+        }
+
+        console.log(uploadedDocs);
+
+        const user = await User.findByIdAndUpdate(
+            userId,
+            { kycDocuments: uploadedDocs },
+            { new: true }
+        );
+
+        res.json({
+            message: "KYC uploaded",
+            kycDocuments: uploadedDocs,
+            user
+        });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
 };
 
 // Get Profile

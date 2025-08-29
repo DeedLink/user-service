@@ -19,6 +19,11 @@ const userSchema = new mongoose.Schema(
       },
     },
     kycDocumentHash: { type: String },
+    kycDocuments: {
+      nicFrontSide: { type : String },
+      nicBackSide: { type : String },
+      userFrontImage: { type : String }
+    },
     kycStatus: {
       type: String,
       enum: ["pending", "verified", "rejected"],

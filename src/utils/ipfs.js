@@ -25,9 +25,9 @@ if (useInfura) {
     process.env.IPFS_MICROSERVICE_URL || "http://localhost:4000";
 
   ipfsClient = {
-    add: async (file) => {
+    add: async (file, type) => {
       const formData = new FormData();
-      formData.append("file", file, "kycDocument.pdf");
+      formData.append("file", file, `kycDocument.${type}`);
 
       const res = await axios.post(`${microserviceURL}/upload`, formData, {
         headers: formData.getHeaders(),

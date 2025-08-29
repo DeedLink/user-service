@@ -4,10 +4,11 @@ import {
   getUsers,
   registerUser,
   loginUser,
-  uploadKYC,
   getProfile,
   verifyKYC,
   listPendingKYC,
+  uploadKYCPDF,
+  uploadKYCImages,
 } from "../controllers/userController.js";
 import { authMiddleware } from "../middleware/authMiddleware.js";
 import { requireRole } from "../validation/role.js";
@@ -21,7 +22,15 @@ router.post("/login", loginUser);
 
 // Protected
 router.get("/profile", authMiddleware, getProfile);
-router.post("/upload-kyc", authMiddleware, upload.single("kyc"), uploadKYC);
+router.post("/upload-kyc-pdf", authMiddleware, upload.single("kyc"), uploadKYCPDF);
+router.post("/upload-kyc",
+    upload.fields([
+        { name: "nicFrontSide", maxCount: 1 },
+        { name: "nicBackSide", maxCount: 1 },
+        { name: "userFrontImage", maxCount: 1 }
+    ]),
+    uploadKYCImages
+);
 
 // Admin/Registrar verifies KYC
 router.patch("/:id/verify-kyc", authMiddleware, requireRole("registrar"), verifyKYC);
