@@ -9,6 +9,7 @@ import {
   listPendingKYC,
   uploadKYCPDF,
   uploadKYCImages,
+  getUserStatus,
 } from "../controllers/userController.js";
 import { authMiddleware } from "../middleware/authMiddleware.js";
 import { requireRole } from "../validation/role.js";
@@ -19,6 +20,7 @@ const upload = multer();
 // Public
 router.post("/register", registerUser);
 router.post("/login", loginUser);
+router.get("/status/:walletAddress", getUserStatus);
 
 // Protected
 router.get("/profile", authMiddleware, getProfile);

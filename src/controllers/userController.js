@@ -175,3 +175,30 @@ export const getUsers = async (_req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+//Get user status (public)
+export const getUserStatus = async (req, res) => {
+  try {
+    const { walletAddress } = req.params;
+    const user = await User.findOne({ walletAddress: walletAddress.toLowerCase() });
+
+    if (!user) {
+      return res.status(200).json({
+        walletAddress,
+        status: "not_registered",
+      });
+    }
+
+    return res.status(200).json({
+      walletAddress,
+      kycStatus: user.kycStatus,
+      userData: {
+        name: user.name,
+        email: user.email
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching user status:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
