@@ -30,6 +30,9 @@ const userSchema = new mongoose.Schema(
     registryCode: {
       type: String
     },
+    licensedSurveyorNumber: {
+      type: String
+    },
     kycDocumentHash: { type: String },
     kycDocuments: {
       nicFrontSide: { type : String },
@@ -43,7 +46,7 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ["user", "registrar", "admin", "notary", "lawyer"],
+      enum: ["user", "registrar", "admin", "notary", "lawyer", "surveyors"],
       default: "user",
     },
   },
