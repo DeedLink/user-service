@@ -18,6 +18,18 @@ const userSchema = new mongoose.Schema(
         message: (props) => `${props.value} is not a valid NIC number!`,
       },
     },
+    supremeCourtRollID: {
+      type: String
+    },
+    rgdId: {
+      type: String
+    },
+    governmentServiceID: {
+      type: String
+    },
+    registryCode: {
+      type: String
+    },
     kycDocumentHash: { type: String },
     kycDocuments: {
       nicFrontSide: { type : String },
@@ -31,7 +43,7 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ["user", "registrar", "admin"],
+      enum: ["user", "registrar", "admin", "notary", "lawyer"],
       default: "user",
     },
   },
