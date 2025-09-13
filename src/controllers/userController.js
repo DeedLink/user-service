@@ -174,7 +174,7 @@ export const uploadKYCPDF = async (req, res) => {
 // Upload KYC Documents to IPFS / Images version
 export const uploadKYCImages = async (req, res) => {
     try {
-        const userId = '68ae98a55edb7b1f2cd21e34';
+        const userId = req.body.userId;
         if (!req.files || Object.keys(req.files).length === 0) {
             return res.status(400).json({ message: "Files missing" });
         }
@@ -187,8 +187,6 @@ export const uploadKYCImages = async (req, res) => {
             const added = await ipfsClient.add(file.buffer, "png");
             uploadedDocs[key] = added.path;
         }
-
-        console.log(uploadedDocs);
 
         const user = await User.findByIdAndUpdate(
             userId,
