@@ -37,6 +37,12 @@ export const registerUser = async (req, res) => {
     if (password) {
       hashedPassword = await bcrypt.hash(password, 10);
     }
+    let otp;
+    if (password) {
+      otp = Math.floor(100000 + Math.random() * 900000).toString();
+      // Send OTP via email (implementation not shown here)
+    }
+
 
     const user = await User.create({
       name,
@@ -45,7 +51,7 @@ export const registerUser = async (req, res) => {
       walletAddress: walletAddress || null,
       password: hashedPassword || "unset",
       kycStatus: "pending",
-      role: role || "user",
+      role: role || "user"
     });
 
     const token = jwt.sign(
