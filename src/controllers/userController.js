@@ -60,6 +60,69 @@ export const registerUser = async (req, res) => {
   }
 };
 
+// Set password for users who registered via wallet and have no password set
+export const setPasswordForUnsetUser = async (req, res) => {
+  try {
+    const { id, email, walletAddress, signature, newPassword, confirmPassword } = req.body;
+
+    if (!newPassword) {
+      return res.status(400).json({ message: "newPassword is required" });
+    }
+    if (typeof newPassword !== "string" || newPassword.length < 8) {
+      return res.status(400).json({ message: "Password must be at least 8 characters" });
+    }
+    if (confirmPassword && newPassword !== confirmPassword) {
+      return res.status(400).json({ message: "Password and confirmPassword do not match" });
+    }
+
+    let query = null;
+    if (id) query = { _id: id };
+    else if (email) query = { email };
+    else if (walletAddress) query = { walletAddress };
+    else return res.status(400).json({ message: "Provide id or email or walletAddress to identify the user" });
+
+    const user = await User.findOne(query);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    if (user.password && user.password !== "unset") {
+      return res.status(400).json({ message: "User already has a password set" });
+    }
+
+    if (walletAddress) {
+      if (!signature) {
+        return res.status(400).json({ message: "Signature required for wallet address flow" });
+      }
+      const message = `Setting password for wallet: ${walletAddress}`;
+      try {
+        const signerAddress = verifyMessage(message, signature);
+        if (signerAddress.toLowerCase() !== walletAddress.toLowerCase()) {
+          return res.status(400).json({ message: "Signature does not match wallet address" });
+        }
+      } catch (err) {
+        return res.status(400).json({ message: "Invalid wallet signature" });
+      }
+    }
+
+    const hashed = await bcrypt.hash(newPassword, 10);
+    user.password = hashed;
+    await user.save();
+
+    const token = jwt.sign(
+      { id: user._id, email: user.email, walletAddress: user.walletAddress, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
+
+    const userSafe = user.toObject();
+    delete userSafe.password;
+
+    return res.json({ message: "Password set successfully", user: userSafe, token });
+  } catch (error) {
+    console.error("setPasswordForUnsetUser error:", error);
+    return res.status(500).json({ message: error.message || "Server error" });
+  }
+};
+
 // Login User
 export const loginUser = async (req, res) => {
   try {
