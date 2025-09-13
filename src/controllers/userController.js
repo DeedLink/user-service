@@ -3,7 +3,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { ipfsClient } from "../utils/ipfs.js";
 import { NIC_REGEX } from "../validation/nic.js";
-import { ethers } from "ethers";
+import { verifyMessage } from "ethers";
 
 // Register User with Wallet
 export const registerUser = async (req, res) => {
@@ -22,7 +22,7 @@ export const registerUser = async (req, res) => {
     if (walletAddress && signature) {
       const message = `Registering wallet: ${walletAddress}`;
       try {
-        const signerAddress = ethers.utils.verifyMessage(message, signature);
+        const signerAddress = verifyMessage(message, signature);
         if (signerAddress.toLowerCase() !== walletAddress.toLowerCase()) {
           return res.status(400).json({ message: "Signature does not match wallet address" });
         }
@@ -30,6 +30,8 @@ export const registerUser = async (req, res) => {
         return res.status(400).json({ message: "Invalid wallet signature" });
       }
     }
+
+    console.log({ name, email, nic, password, walletAddress, signature, role })
 
     let hashedPassword;
     if (password) {
@@ -41,7 +43,7 @@ export const registerUser = async (req, res) => {
       email,
       nic,
       walletAddress: walletAddress || null,
-      password: hashedPassword || null,
+      password: hashedPassword || "unset",
       kycStatus: "pending",
       role: role || "user",
     });
