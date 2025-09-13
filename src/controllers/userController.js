@@ -4,11 +4,13 @@ import jwt from "jsonwebtoken";
 import { ipfsClient } from "../utils/ipfs.js";
 import { NIC_REGEX } from "../validation/nic.js";
 import { verifyMessage } from "ethers";
+import { generateOTP } from "../utils/otp.js";
+import { sendEmail } from "../utils/email.js";
 
 // Register User with Wallet
 export const registerUser = async (req, res) => {
   try {
-    const { name, email, nic, password, walletAddress, signature, role } = req.body;
+    const { name, email, nic, walletAddress, signature, role } = req.body;
 
     if (!NIC_REGEX.test(nic)) {
       return res.status(400).json({ message: "Invalid NIC number" });
@@ -31,25 +33,12 @@ export const registerUser = async (req, res) => {
       }
     }
 
-    console.log({ name, email, nic, password, walletAddress, signature, role })
-
-    let hashedPassword;
-    if (password) {
-      hashedPassword = await bcrypt.hash(password, 10);
-    }
-    let otp;
-    if (password) {
-      otp = Math.floor(100000 + Math.random() * 900000).toString();
-      // Send OTP via email (implementation not shown here)
-    }
-
-
     const user = await User.create({
       name,
       email,
       nic,
       walletAddress: walletAddress || null,
-      password: hashedPassword || "unset",
+      password: "unset",
       kycStatus: "pending",
       role: role || "user"
     });
@@ -69,8 +58,7 @@ export const registerUser = async (req, res) => {
 // Set password for users who registered via wallet and have no password set
 export const setPasswordForUnsetUser = async (req, res) => {
   try {
-    const { email, walletAddress, signature, newPassword, confirmPassword } = req.body;
-
+    const { email, walletAddress, signature, newPassword, confirmPassword, otp } = req.body;
     if (!newPassword) {
       return res.status(400).json({ message: "newPassword is required" });
     }
@@ -105,6 +93,25 @@ export const setPasswordForUnsetUser = async (req, res) => {
         }
       } catch (err) {
         return res.status(400).json({ message: "Invalid wallet signature" });
+      }
+    }
+
+    if(user.resetPasswordExpires && user.resetPasswordExpires < Date.now()) {
+      return res.status(400).json({ message: "The password reset token has expired. Please contact support." });
+    }
+
+    if(user.resetPasswordToken && !otp) {
+      return res.status(400).json({ message: "OTP is required to set the password. Please check your email." });
+    }
+
+    if(!user.resetPasswordToken) {
+      return res.status(400).json({ message: "No password reset token found. Please contact support." });
+    }
+
+    if(user.resetPasswordToken) {
+      const isMatch = await bcrypt.compare(otp, user.resetPasswordToken);
+      if (!isMatch) {
+        return res.status(400).json({ message: "Invalid password reset token. Please contact support." });
       }
     }
 
@@ -218,7 +225,27 @@ export const verifyKYC = async (req, res) => {
     if (!user) return res.status(404).send("User not found");
 
     user.kycStatus = status;
+
+    const otp = generateOTP(6);
+    const hashedOTP = await bcrypt.hash(otp, 10);
+    user.resetPasswordToken = hashedOTP;
+    user.resetPasswordExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
     await user.save();
+
+    await sendEmail({
+      to: user.email,
+      subject: "Your account has been verified",
+      text: `Hello ${user.name}, your KYC verification is now complete. 
+            Your KYC Verification Key is: ${otp}. It expires in 24 hours.`,
+      html: `
+        <p>Hello <b>${user.name}</b>,</p>
+        <p>Your KYC verification is now <b>verified</b>. You can now access all features.</p>
+        <p>Your KYC Verification Key is: <b>${otp}</b></p>
+        <p><i>(Expires in 24 hours)</i></p>
+      `,
+    });
+
 
     res.send({ message: `KYC ${status}`, user });
   } catch (err) {
