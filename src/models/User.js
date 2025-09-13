@@ -10,7 +10,7 @@ const userSchema = new mongoose.Schema(
     nic: {
       type: String,
       required: true,
-      unique: true,
+      //unique: true,
       validate: {
         validator: function (v) {
           return NIC_REGEX.test(v);
@@ -54,5 +54,9 @@ const userSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+userSchema.index({ role: 1, name: 1 }, { unique: true });
+//userSchema.index({ role: 1, walletAddress: 1 }, { unique: true }); just wallet address unique is enough no need to combine with role I guess, not guess, I like to change
+userSchema.index({ role: 1, nic: 1 }, { unique: true });
 
 export default mongoose.model("User", userSchema);
