@@ -63,12 +63,12 @@ export const registerUser = async (req, res) => {
 // Set password for users who registered via wallet and have no password set
 export const setPasswordForUnsetUser = async (req, res) => {
   try {
-    const { id, email, walletAddress, signature, newPassword, confirmPassword } = req.body;
+    const { email, walletAddress, signature, newPassword, confirmPassword } = req.body;
 
     if (!newPassword) {
       return res.status(400).json({ message: "newPassword is required" });
     }
-    if (typeof newPassword !== "string" || newPassword.length < 8) {
+    if (typeof newPassword !== "string" || newPassword.length < 6) {
       return res.status(400).json({ message: "Password must be at least 8 characters" });
     }
     if (confirmPassword && newPassword !== confirmPassword) {
@@ -76,8 +76,7 @@ export const setPasswordForUnsetUser = async (req, res) => {
     }
 
     let query = null;
-    if (id) query = { _id: id };
-    else if (email) query = { email };
+    if (email) query = { email };
     else if (walletAddress) query = { walletAddress };
     else return res.status(400).json({ message: "Provide id or email or walletAddress to identify the user" });
 
