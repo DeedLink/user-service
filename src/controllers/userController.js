@@ -33,6 +33,8 @@ export const registerUser = async (req, res) => {
       }
     }
 
+    console.log(req.body);
+
     const user = await User.create({
       name,
       email,
@@ -43,6 +45,8 @@ export const registerUser = async (req, res) => {
       role: role || "user"
     });
 
+    console.log("User created:", user);
+
     const token = jwt.sign(
       { id: user._id, email: user.email, walletAddress: user.walletAddress, role: user.role },
       process.env.JWT_SECRET,
@@ -51,6 +55,7 @@ export const registerUser = async (req, res) => {
 
     res.json({ user, token });
   } catch (error) {
+    console.error("registerUser error:", error);
     res.status(500).json({ message: error.message });
   }
 };
@@ -174,7 +179,7 @@ export const uploadKYCPDF = async (req, res) => {
 // Upload KYC Documents to IPFS / Images version
 export const uploadKYCImages = async (req, res) => {
     try {
-        const userId = '68ae98a55edb7b1f2cd21e34';
+        const userId = req.body.userId;
         if (!req.files || Object.keys(req.files).length === 0) {
             return res.status(400).json({ message: "Files missing" });
         }
@@ -187,8 +192,6 @@ export const uploadKYCImages = async (req, res) => {
             const added = await ipfsClient.add(file.buffer, "png");
             uploadedDocs[key] = added.path;
         }
-
-        console.log(uploadedDocs);
 
         const user = await User.findByIdAndUpdate(
             userId,

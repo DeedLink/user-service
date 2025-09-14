@@ -3,7 +3,7 @@ import { NIC_REGEX } from "../validation/nic.js";
 
 const userSchema = new mongoose.Schema(
   {
-    name: { type: String, required: true },
+    name: { type: String, required: true, unique: false },
     email: { type: String, required: true, unique: true },
     walletAddress: { type: String, unique: true },
     password: { type: String, required: true },
@@ -55,7 +55,7 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-userSchema.index({ role: 1, name: 1 }, { unique: true });
+//userSchema.index({ role: 1, name: 1 }, { unique: true });
 //userSchema.index({ role: 1, walletAddress: 1 }, { unique: true }); just wallet address unique is enough no need to combine with role I guess, not guess, I like to change
 userSchema.index({ role: 1, nic: 1 }, { unique: true });
 
