@@ -33,6 +33,8 @@ export const registerUser = async (req, res) => {
       }
     }
 
+    console.log(req.body);
+
     const user = await User.create({
       name,
       email,
@@ -43,6 +45,8 @@ export const registerUser = async (req, res) => {
       role: role || "user"
     });
 
+    console.log("User created:", user);
+
     const token = jwt.sign(
       { id: user._id, email: user.email, walletAddress: user.walletAddress, role: user.role },
       process.env.JWT_SECRET,
@@ -51,6 +55,7 @@ export const registerUser = async (req, res) => {
 
     res.json({ user, token });
   } catch (error) {
+    console.error("registerUser error:", error);
     res.status(500).json({ message: error.message });
   }
 };
