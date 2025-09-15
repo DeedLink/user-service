@@ -302,3 +302,37 @@ export const getUserStatus = async (req, res) => {
     return res.status(500).json({ message: "Internal server error" });
   }
 };
+
+//Get user role by token passing with the header (public)
+export const getRole = async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({ message: "Authorization header missing or malformed" });
+    }
+
+    const token = authHeader.split(" ")[1];
+    if (!token) {
+      return res.status(401).json({ message: "Token missing" });
+    }
+
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET);
+    } catch (err) {
+      return res.status(401).json({ message: "Invalid or expired token" });
+    }
+
+    const user = await User.findById(decoded.id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    return res.status(200).json({
+      role: user.role
+    });
+  } catch (error) {
+    console.error("Error fetching user role:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
