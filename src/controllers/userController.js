@@ -303,6 +303,33 @@ export const getUserStatus = async (req, res) => {
   }
 };
 
+//Get user password status (public)
+export const getUserPasswordStatus = async (req, res) => {
+  try {
+    const { walletAddress } = req.params;
+    const user = await User.findOne({ walletAddress: walletAddress.toLowerCase() });
+
+    if (!user) {
+      return res.status(200).json({
+        walletAddress,
+        passwordStatus: "not_registered",
+      });
+    }
+
+    return res.status(200).json({
+      walletAddress,
+      passwordStatus: user.password === "unset" ? "unset" : "set",
+      userData: {
+        name: user.name,
+        email: user.email
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching user password status:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 //Get user role by token passing with the header (public)
 export const getRole = async (req, res) => {
   try {
