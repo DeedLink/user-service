@@ -12,6 +12,7 @@ import {
   getUserStatus,
   setPasswordForUnsetUser,
   getRole,
+  getUserPasswordStatus,
 } from "../controllers/userController.js";
 import { authMiddleware } from "../middleware/authMiddleware.js";
 import { requireRole } from "../validation/role.js";
@@ -24,6 +25,7 @@ router.post("/register", registerUser);
 router.post("/set-password", setPasswordForUnsetUser);
 router.post("/login", loginUser);
 router.get("/status/:walletAddress", getUserStatus);
+router.get("/status/password/:walletAddress", getUserPasswordStatus);
 router.get("/role", getRole);
 
 // Protected
