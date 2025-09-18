@@ -363,3 +363,28 @@ export const getRole = async (req, res) => {
     return res.status(500).json({ message: "Internal server error" });
   }
 };
+
+// Search user by name, email, or wallet address (public)
+export const searchUser = async (req, res) => {
+  console.log("Search user called with query:", req.query);
+  try {
+    const { query } = req.query;
+    if (!query) {
+      return res.status(400).json({ message: "Query parameter is required" });
+    }
+
+    const regex = new RegExp(query, 'i');
+    const users = await User.find({
+      $or: [
+        { name: regex },
+        { email: regex },
+        { walletAddress: regex }
+      ]
+    }).select('-password');
+
+    res.json(users);
+  } catch (error) {
+    console.error("Error searching users:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
