@@ -14,10 +14,10 @@ import {
   getRole,
   getUserPasswordStatus,
   searchUser,
+  requestProof,
 } from "../controllers/userController.js";
 import { authMiddleware } from "../middleware/authMiddleware.js";
 import { requireRole } from "../validation/role.js";
-
 const router = express.Router();
 const upload = multer();
 
@@ -29,6 +29,7 @@ router.get("/status/:walletAddress", getUserStatus);
 router.get("/status/password/:walletAddress", getUserPasswordStatus);
 router.get("/role", getRole);
 router.get("/search-user", searchUser);
+router.post("/get-proof/:walletAddress", requestProof);
 
 // Protected
 router.get("/profile", authMiddleware, getProfile);

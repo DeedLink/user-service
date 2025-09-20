@@ -6,6 +6,7 @@ import { NIC_REGEX } from "../validation/nic.js";
 import { verifyMessage } from "ethers";
 import { generateOTP } from "../utils/otp.js";
 import { sendEmail } from "../utils/email.js";
+import { appendAddress, getProof } from "../web3.0/merkleproof.js";
 
 // Register User with Wallet
 export const registerUser = async (req, res) => {
@@ -236,6 +237,10 @@ export const verifyKYC = async (req, res) => {
 
     await user.save();
 
+    // appendAddress(user.walletAddress).catch((err) =>
+    //   console.error("Error updating whitelist:", err)
+    // );
+
     await sendEmail({
       to: user.email,
       subject: "Your account has been verified",
@@ -248,8 +253,7 @@ export const verifyKYC = async (req, res) => {
         <p><i>(Expires in 24 hours)</i></p>
       `,
     });
-
-
+    
     res.send({ message: `KYC ${status}`, user });
   } catch (err) {
     res.status(500).send(err.message);
@@ -263,6 +267,22 @@ export const listPendingKYC = async (_req, res) => {
     res.send(users);
   } catch (err) {
     res.status(500).send(err.message);
+  }
+};
+
+// Generate and return Merkle Proof for a given wallet address (public)
+export const requestProof = async (req, res) => {
+  try {
+    const { walletAddress } = req.params;
+    if (!walletAddress) {
+      return res.status(400).json({ message: "walletAddress parameter is required" });
+    }
+
+    const proof = getProof(walletAddress);
+    return res.json({ walletAddress, proof });
+  } catch (error) {
+    console.error("Error generating proof:", error);
+    return res.status(500).json({ message: "Internal server error" });
   }
 };
 
