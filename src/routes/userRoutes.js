@@ -14,8 +14,10 @@ import {
   getRole,
   getUserPasswordStatus,
   searchUser,
+  getAdminAccessKey,
+  verifyAdminOTP,
 } from "../controllers/userController.js";
-import { authMiddleware } from "../middleware/authMiddleware.js";
+import { adminMiddleware, authMiddleware } from "../middleware/authMiddleware.js";
 import { requireRole } from "../validation/role.js";
 
 const router = express.Router();
@@ -29,6 +31,8 @@ router.get("/status/:walletAddress", getUserStatus);
 router.get("/status/password/:walletAddress", getUserPasswordStatus);
 router.get("/role", getRole);
 router.get("/search-user", searchUser);
+router.get("/admin/:walletAddress", getAdminAccessKey);
+router.post("/admin/verify", verifyAdminOTP);
 
 // Protected
 router.get("/profile", authMiddleware, getProfile);
@@ -43,10 +47,10 @@ router.post("/upload-kyc",
 );
 
 // Admin/Registrar verifies KYC
-router.patch("/:id/verify-kyc", authMiddleware, requireRole("registrar"), verifyKYC);
+router.patch("/:id/verify-kyc", authMiddleware, adminMiddleware, requireRole("registrar"), verifyKYC);
 
 // List pending KYC
-router.get("/pending-kyc", authMiddleware, requireRole("registrar"), listPendingKYC);
+router.get("/pending-kyc", authMiddleware, adminMiddleware, requireRole("registrar"), listPendingKYC);
 
 //For testing those must be restricted
 router.get("/", getUsers);

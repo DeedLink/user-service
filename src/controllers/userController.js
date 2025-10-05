@@ -388,3 +388,85 @@ export const searchUser = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
+// Get admin key (public)
+export const getAdminAccessKey = async (req, res) => {
+  try {
+    const { walletAddress } = req.params;
+    console.log(walletAddress)
+
+    if (!walletAddress || typeof walletAddress !== "string") {
+      return res.status(400).json({ message: "Invalid wallet address" });
+    }
+
+    const user = await User.findOne({ walletAddress: walletAddress.toLowerCase() });
+    if(user.role != "admin"){
+      return res.status(400).json({
+        walletAddress: user.walletAddress,
+        status: "not an admin",
+      });
+    }
+
+    if (!user) {
+      return res.status(200).json({
+        walletAddress,
+        status: "not_registered",
+      });
+    }
+
+    const otp = generateOTP(6);
+    const hashedOTP = await bcrypt.hash(otp, 10);
+
+    user.resetPasswordToken = hashedOTP;
+    user.resetPasswordExpires = new Date(Date.now() + 1 * 60 * 60 * 1000);
+    await user.save();
+
+    await sendEmail({
+      to: user.email,
+      subject: "Admin Access Key",
+      text: `Hello ${user.name}, Your access Key is: ${otp}. It expires in 1 hour.`,
+      html: `
+        <p>Hello <b>${user.name}</b>,</p>
+        <p>Your access Key is: <b>${otp}</b></p>
+        <p><i>(Expires in 1 hour)</i></p>
+      `,
+    });
+
+    return res.status(200).json({
+      walletAddress: user.walletAddress,
+      status: "otp_sent",
+    });
+  } catch (error) {
+    console.error("Error fetching user status:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+// Verify admin
+export const verifyAdminOTP = async (req, res) => {
+  const { walletAddress, otp } = req.body;
+  const user = await User.findOne({ walletAddress: walletAddress.toLowerCase(), role: "admin" });
+
+  if (!user) return res.status(404).json({ message: "Admin user not found" });
+  if (!user.resetPasswordToken || !user.resetPasswordExpires) return res.status(400).json({ message: "No OTP requested" });
+  if (user.resetPasswordExpires < new Date()) return res.status(400).json({ message: "OTP expired" });
+
+  const isValid = await bcrypt.compare(otp, user.resetPasswordToken);
+  if (!isValid) return res.status(400).json({ message: "Invalid OTP" });
+
+  const token = jwt.sign(
+    { id: user._id, email: user.email, walletAddress: user.walletAddress, role: user.role },
+    process.env.JWT_SECRET,
+    { expiresIn: "7d" }
+  );
+
+  user.resetPasswordToken = undefined;
+  user.resetPasswordExpires = undefined;
+  await user.save();
+
+  return res.status(200).json({
+    message: "Admin access granted",
+    token,
+    user: { id: user._id, name: user.name, email: user.email, role: user.role },
+  });
+};
