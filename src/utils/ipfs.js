@@ -1,6 +1,9 @@
 import { create } from "ipfs-http-client";
 import axios from "axios";
+import dotenv from "dotenv";
 import FormData from "form-data";
+
+dotenv.config();
 
 const useInfura = process.env.USE_INFURA === "true";
 
@@ -21,8 +24,9 @@ if (useInfura) {
     },
   });
 } else {
-  const microserviceURL =
-    process.env.IPFS_MICROSERVICE_URL || "http://localhost:4000";
+  const microserviceURL = process.env.IPFS_MICROSERVICE_URL || "http://localhost:4000";
+
+  console.log(microserviceURL);
 
   ipfsClient = {
     add: async (file, type) => {
