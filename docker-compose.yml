@@ -1,16 +1,24 @@
-version: "3.8"
+version: "3.9"
+
 services:
-  user-service:
+  app:
     build: .
+    container_name: node-app
     ports:
       - "5000:5000"
     environment:
-      - MONGO_URI=mongodb://mongo:27017/user-service
-      - JWT_SECRET=supersecretkey
+      - NODE_ENV=production
+      - MONGO_URI=mongodb://localhost:27017/user-service
     depends_on:
       - mongo
 
   mongo:
-    image: mongo:6
+    image: mongo:7.0
+    container_name: node-mongo
     ports:
       - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+volumes:
+  mongo-data:
