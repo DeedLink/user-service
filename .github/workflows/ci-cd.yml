@@ -18,25 +18,25 @@ jobs:
         ports:
           - 27017:27017
         options: >-
-          --health-cmd "mongo --eval 'db.adminCommand(\"ping\")'" 
+          --health-cmd "mongosh --eval 'db.adminCommand(\"ping\")'" 
           --health-interval 10s 
           --health-timeout 5s 
           --health-retries 5
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: 20
 
       - name: Install dependencies
         run: npm ci
 
       - name: Wait for MongoDB
-        run: sleep 10
+        run: sleep 15
 
       - name: Run tests
         run: npm test
@@ -58,18 +58,17 @@ jobs:
           PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
           CONTRACT_ADDRESS: ${{ secrets.CONTRACT_ADDRESS }}
 
-
       - name: Build Docker image
-        run: docker build -t your-dockerhub-username/user-service:latest .
+        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/user-service:latest .
 
       - name: Login to Docker Hub
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Push Docker image
-        run: docker push your-dockerhub-username/user-service:latest
+        run: docker push ${{ secrets.DOCKER_USERNAME }}/user-service:latest
 
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v0.1.7
