@@ -77,6 +77,6 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
-            cd /path/to/your/app
+            cd /home/ubuntu/deedlink-deployments/user-service
             docker-compose pull
             docker-compose up -d --remove-orphans
