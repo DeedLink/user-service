@@ -80,7 +80,7 @@ jobs:
             cd /home/ubuntu/deedlink-deployments || mkdir -p /home/ubuntu/deedlink-deployments
             cd /home/ubuntu/deedlink-deployments
             if [ ! -d "user-service" ]; then
-              git clone https://github.com/D-Link/user-service.git user-service
+              git clone https://github.com/DeedLink/user-service.git user-service
             fi
             cd user-service
             git reset --hard
