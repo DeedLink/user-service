@@ -77,6 +77,13 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
-            cd /home/ubuntu/deedlink-deployments/user-service
+            cd /home/ubuntu/deedlink-deployments || mkdir -p /home/ubuntu/deedlink-deployments
+            cd /home/ubuntu/deedlink-deployments
+            if [ ! -d "user-service" ]; then
+              git clone https://github.com/D-Link/user-service.git user-service
+            fi
+            cd user-service
+            git reset --hard
+            git pull origin main
             docker compose pull
             docker compose up -d --remove-orphans
