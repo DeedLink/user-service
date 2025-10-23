@@ -407,6 +407,8 @@ export const getAdminAccessKey = async (req, res) => {
       });
     }
 
+    console.log("User found:", user);
+
     if (!user) {
       return res.status(200).json({
         walletAddress,
@@ -420,6 +422,8 @@ export const getAdminAccessKey = async (req, res) => {
     user.resetPasswordToken = hashedOTP;
     user.resetPasswordExpires = new Date(Date.now() + 1 * 60 * 60 * 1000);
     await user.save();
+
+    console.log("OTP generated and saved for user:", user);
 
     await sendEmail({
       to: user.email,
