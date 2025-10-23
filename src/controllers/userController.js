@@ -316,7 +316,7 @@ export const verifyKYC = async (req, res) => {
 // Admin/Listing KYC
 export const listPendingKYC = async (_req, res) => {
   try {
-    const users = await User.find({ kycStatus: "pending" });
+    const users = await User.find({ kycStatus: "pending" }, { role: "user" });
     res.send(users);
   } catch (err) {
     res.status(500).send(err.message);
