@@ -60,6 +60,64 @@ export const registerUser = async (req, res) => {
   }
 };
 
+// Register Department User
+export const registerDepartmentUser = async (req, res) => {
+  try {
+    const { name, email, nic, walletAddress, role } = req.body;
+
+    if (!NIC_REGEX.test(nic)) {
+      return res.status(400).json({ message: "Invalid NIC number" });
+    }
+
+    const existing = await User.findOne({ $or: [{ email }, { nic }, { walletAddress }] });
+    if (existing) {
+      return res.status(400).json({ message: "Email, NIC, or Wallet already exists" });
+    }
+
+    if(!role || (role !== "notary" && role !== "surveyor" && role !== "IVSL" || !walletAddress)) {
+      return res.status(400).json({ message: "Invalid role for department user" });
+    }
+
+    const user = await User.create({
+      name,
+      email,
+      nic,
+      walletAddress: walletAddress,
+      password: "unset",
+      kycStatus: "verified",
+      role: role
+    });
+
+    if(user){
+      const otp = generateOTP(6);
+      const hashedOTP = await bcrypt.hash(otp, 10);
+      user.resetPasswordToken = hashedOTP;
+      user.resetPasswordExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
+      await user.save();
+
+      await sendEmail({
+        to: user.email,
+        subject: "Department User Registration",
+        text: `Hello ${user.name}, your department user account has been created. 
+              Your KYC Verification Key is: ${otp}. It expires in 24 hours.`,
+        html: `
+          <p>Hello <b>${user.name}</b>,</p>
+          <p>Your department user account has been created with role: <b>${role}</b>.</p>
+          <p>Your KYC Verification Key is: <b>${otp}</b></p>
+          <p><i>(Expires in 24 hours)</i></p>
+        `,
+      });
+    }
+
+    console.log("Department User created:", user);
+
+    res.json({ user });
+  } catch (error) {
+    console.error("registerDepartmentUser error:", error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
 // Set password for users who registered via wallet and have no password set
 export const setPasswordForUnsetUser = async (req, res) => {
   try {
@@ -248,7 +306,6 @@ export const verifyKYC = async (req, res) => {
         <p><i>(Expires in 24 hours)</i></p>
       `,
     });
-
 
     res.send({ message: `KYC ${status}`, user });
   } catch (err) {
