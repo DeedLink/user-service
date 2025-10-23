@@ -393,7 +393,6 @@ export const searchUser = async (req, res) => {
 export const getAdminAccessKey = async (req, res) => {
   try {
     const { walletAddress } = req.params;
-    console.log(walletAddress)
 
     if (!walletAddress || typeof walletAddress !== "string") {
       return res.status(400).json({ message: "Invalid wallet address" });
