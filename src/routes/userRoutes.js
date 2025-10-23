@@ -17,6 +17,7 @@ import {
   getAdminAccessKey,
   verifyAdminOTP,
   registerDepartmentUser,
+  setPasswordForUnsetDepartmentUser,
 } from "../controllers/userController.js";
 import { adminMiddleware, authMiddleware } from "../middleware/authMiddleware.js";
 import { requireRole } from "../validation/role.js";
@@ -27,6 +28,7 @@ const upload = multer();
 // Public
 router.post("/register", registerUser);
 router.post("/register-department-user", registerDepartmentUser);
+router.post("/set-password-for-unset-department-user", setPasswordForUnsetDepartmentUser);
 router.post("/set-password", setPasswordForUnsetUser);
 router.post("/login", loginUser);
 router.get("/status/:walletAddress", getUserStatus);
