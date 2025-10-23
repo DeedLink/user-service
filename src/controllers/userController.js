@@ -84,7 +84,7 @@ export const registerDepartmentUser = async (req, res) => {
       nic,
       walletAddress: walletAddress,
       password: "unset",
-      kycStatus: "verified",
+      kycStatus: "pending",
       role: role
     });
 
