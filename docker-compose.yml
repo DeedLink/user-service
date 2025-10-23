@@ -20,4 +20,4 @@ services:
       - user-mongo-data:/data/db
 
 volumes:
-  mongo-data:
+  user-mongo-data:
