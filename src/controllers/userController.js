@@ -400,6 +400,7 @@ export const getAdminAccessKey = async (req, res) => {
     }
 
     const user = await User.findOne({ walletAddress: walletAddress.toLowerCase() });
+    console.log("User fetched for admin access key:", user);
     if(user.role != "admin"){
       return res.status(400).json({
         walletAddress: user.walletAddress,
