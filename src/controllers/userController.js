@@ -122,7 +122,7 @@ export const registerDepartmentUser = async (req, res) => {
 export const setPasswordForUnsetDepartmentUser = async (req, res) => {
   try {
     const { email, walletAddress, signature, newPassword, confirmPassword, otp } = req.body;
-    console.log("setPasswordForUnsetDepartmentUser called with:", req.body);
+    
     if (!newPassword) {
       return res.status(400).json({ message: "newPassword is required" });
     }
