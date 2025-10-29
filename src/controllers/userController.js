@@ -349,6 +349,35 @@ export const uploadKYCImages = async (req, res) => {
     }
 };
 
+// Upload DP
+export const uploadProfilePicture = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    if (!req.file) {
+      return res.status(400).json({ message: "No file uploaded" });
+    }
+
+    const file = req.file;
+    const added = await ipfsClient.add(file.buffer);
+    const profilePicUrl = added.path;
+
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { dp: profilePicUrl },
+      { new: true }
+    );
+
+    res.status(200).json({
+      message: "Profile picture uploaded successfully",
+      dp: profilePicUrl,
+      user
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
 // Get Profile
 export const getProfile = async (req, res) => {
   const user = await User.findById(req.user.id).select("-password");
