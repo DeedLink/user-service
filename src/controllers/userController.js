@@ -363,7 +363,7 @@ export const uploadProfilePicture = async (req, res) => {
 
     const user = await User.findByIdAndUpdate(
       userId,
-      { dp: profilePicUrl },
+      { profilePicture: profilePicUrl },
       { new: true }
     );
 
