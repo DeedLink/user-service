@@ -358,7 +358,7 @@ export const uploadProfilePicture = async (req, res) => {
     }
 
     const file = req.file;
-    const added = await ipfsClient.add(file.buffer);
+    const added = await ipfsClient.add(file.buffer, "png");
     const profilePicUrl = added.path;
 
     const user = await User.findByIdAndUpdate(
