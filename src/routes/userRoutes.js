@@ -18,6 +18,7 @@ import {
   verifyAdminOTP,
   registerDepartmentUser,
   setPasswordForUnsetDepartmentUser,
+  uploadProfilePicture,
 } from "../controllers/userController.js";
 import { adminMiddleware, authMiddleware } from "../middleware/authMiddleware.js";
 import { requireRole } from "../validation/role.js";
@@ -49,6 +50,7 @@ router.post("/upload-kyc",
     ]),
     uploadKYCImages
 );
+router.post("/profile-picture", authMiddleware, upload.single("profilePicture"), uploadProfilePicture);
 
 // Admin/Registrar verifies KYC
 router.patch("/:id/verify-kyc", authMiddleware, adminMiddleware, requireRole("registrar"), verifyKYC);

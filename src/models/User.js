@@ -4,6 +4,7 @@ import { NIC_REGEX } from "../validation/nic.js";
 const userSchema = new mongoose.Schema(
   {
     name: { type: String, required: true, unique: false },
+    profilePicture: { type: String, require: false },
     email: { type: String, required: true, unique: true },
     walletAddress: { type: String, unique: true },
     password: { type: String, required: true },
