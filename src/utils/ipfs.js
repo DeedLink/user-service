@@ -34,7 +34,10 @@ if (useInfura) {
       formData.append("file", file, `kycDocument.${type}`);
 
       const res = await axios.post(`${microserviceURL}/upload`, formData, {
-        headers: formData.getHeaders(),
+        headers: {
+          ...formData.getHeaders(),
+          "ngrok-skip-browser-warning": "true"
+        },
       });
 
       return {
@@ -47,6 +50,7 @@ if (useInfura) {
     cat: async (hash) => {
       const res = await axios.get(`${microserviceURL}/file/${hash}`, {
         responseType: "arraybuffer",
+        headers: { "ngrok-skip-browser-warning": "true" }
       });
       return res.data;
     },
