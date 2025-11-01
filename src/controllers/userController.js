@@ -447,7 +447,7 @@ export const getUsers = async (_req, res) => {
 // Get users by role
 export const getUsersByRole = async (req, res) => {
   try {
-    const { role } = req.params;
+    const { role } = req.params.toLowerCase();
     const users = await User.find({ role });
     res.status(200).json(users);
   } catch (err) {
