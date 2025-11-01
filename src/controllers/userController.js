@@ -447,11 +447,12 @@ export const getUsers = async (_req, res) => {
 // Get users by role
 export const getUsersByRole = async (req, res) => {
   try {
-    const { role } = req.params.toLowerCase();
+    const { role } = req.params;
+    const lowerCasedRole = role.toLowerCase();
 
     const filter = {
       kycStatus: "verified",
-      ...(role && { role }),
+      ...(lowerCasedRole && { role: lowerCasedRole }),
     };
 
     const users = await User.find(filter).select("-password -nic -kycStatus -resetPasswordExpires -resetPasswordToken");
