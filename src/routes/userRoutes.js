@@ -19,6 +19,7 @@ import {
   registerDepartmentUser,
   setPasswordForUnsetDepartmentUser,
   uploadProfilePicture,
+  getUsersByRole,
 } from "../controllers/userController.js";
 import { adminMiddleware, authMiddleware } from "../middleware/authMiddleware.js";
 import { requireRole } from "../validation/role.js";
@@ -60,5 +61,8 @@ router.get("/pending-kyc", authMiddleware, adminMiddleware, requireRole("registr
 
 //For testing those must be restricted
 router.get("/", getUsers);
+
+//Later
+router.get("/role/:role", getUsersByRole);
 
 export default router;
