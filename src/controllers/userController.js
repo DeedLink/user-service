@@ -448,7 +448,13 @@ export const getUsers = async (_req, res) => {
 export const getUsersByRole = async (req, res) => {
   try {
     const { role } = req.params.toLowerCase();
-    const users = await User.find({ role });
+
+    const filter = {
+      kycStatus: "verified",
+      ...(role && { role }),
+    };
+
+    const users = await User.find(filter).select("-password -nic -kycStatus -resetPasswordExpires -resetPasswordToken");
     res.status(200).json(users);
   } catch (err) {
     res.status(500).json({ error: err.message });
