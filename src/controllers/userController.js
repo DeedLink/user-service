@@ -448,7 +448,7 @@ export const getUsers = async (_req, res) => {
 export const getUsersByRole = async (req, res) => {
   try {
     const { role } = req.params;
-    const lowerCasedRole = role.toLowerCase();
+    const lowerCasedRole = role;
 
     const filter = {
       kycStatus: "verified",
