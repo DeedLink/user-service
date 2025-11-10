@@ -17,6 +17,6 @@ app.use("/api/users", userRoutes);
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, async () => {
-  console.log(`✅ User service running on port ${PORT}`);
+  console.log(`User service running on port ${PORT}`);
   await initializeAdmin();
 });
