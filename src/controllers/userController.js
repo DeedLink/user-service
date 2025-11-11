@@ -662,7 +662,7 @@ export const verifyAdminOTP = async (req, res) => {
 };
 
 // Get email by wallet address (public)
-export const getEmailByWalletAddress = asyncHandler(async (req, res) => {
+export const getEmailByWalletAddress = async (req, res) => {
   try {
     const { walletAddress } = req.params;
 
@@ -683,4 +683,4 @@ export const getEmailByWalletAddress = asyncHandler(async (req, res) => {
     console.error("Error fetching email by wallet address:", error.message);
     res.status(500).json({ message: "Server error", error: error.message });
   }
-});
+};
