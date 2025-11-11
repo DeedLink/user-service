@@ -20,9 +20,11 @@ import {
   setPasswordForUnsetDepartmentUser,
   uploadProfilePicture,
   getUsersByRole,
+  getEmailByWalletAddress,
 } from "../controllers/userController.js";
 import { adminMiddleware, authMiddleware } from "../middleware/authMiddleware.js";
 import { requireRole } from "../validation/role.js";
+import { internalAccessMiddleware } from "../middleware/internalAccess.js";
 
 const router = express.Router();
 const upload = multer();
@@ -34,6 +36,7 @@ router.post("/set-password-for-unset-department-user", setPasswordForUnsetDepart
 router.post("/set-password", setPasswordForUnsetUser);
 router.post("/login", loginUser);
 router.get("/status/:walletAddress", getUserStatus);
+router.get("/email/:walletAddress", internalAccessMiddleware, getEmailByWalletAddress);
 router.get("/status/password/:walletAddress", getUserPasswordStatus);
 router.get("/role", getRole);
 router.get("/search-user", searchUser);

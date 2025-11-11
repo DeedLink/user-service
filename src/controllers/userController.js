@@ -660,3 +660,27 @@ export const verifyAdminOTP = async (req, res) => {
     user: { id: user._id, name: user.name, email: user.email, role: user.role },
   });
 };
+
+// Get email by wallet address (public)
+export const getEmailByWalletAddress = asyncHandler(async (req, res) => {
+  try {
+    const { walletAddress } = req.params;
+
+    if (!walletAddress) {
+      return res.status(400).json({ message: "Wallet address is required" });
+    }
+
+    const user = await User.findOne({
+      walletAddress: { $regex: new RegExp(`^${walletAddress}$`, "i") },
+    });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    return res.status(200).json({ email: user.email });
+  } catch (error) {
+    console.error("Error fetching email by wallet address:", error.message);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+});
