@@ -6,7 +6,6 @@ import cors from "cors";
 import { initializeAdmin } from "./utils/initializeAdmin.js";
 
 dotenv.config();
-connectDB();
 
 const app = express();
 app.use(cors());
@@ -16,7 +15,18 @@ app.use("/api/users", userRoutes);
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, async () => {
-  console.log(`User service running on port ${PORT}`);
-  await initializeAdmin();
-});
+const startServer = async () => {
+  try {
+    await connectDB();
+    await initializeAdmin();
+    console.log("Admin initialized");
+    
+    app.listen(PORT, () => {
+      console.log(`User service running on port ${PORT}`);
+    });
+  } catch (error) {
+    console.error("Server failed to start:", error);
+  }
+};
+
+startServer();
